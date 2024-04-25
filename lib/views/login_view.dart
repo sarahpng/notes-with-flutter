@@ -1,29 +1,16 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:notes_with_flutter/views/login_view.dart';
-import 'firebase_options.dart';
+import 'package:notes_with_flutter/firebase_options.dart';
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(MaterialApp(
-    title: 'Flutter Demo',
-    theme: ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      useMaterial3: true,
-    ),
-    home: const RegisterView(),
-  ));
-}
-
-class RegisterView extends StatefulWidget {
-  const RegisterView({super.key});
+class LoginView extends StatefulWidget {
+  const LoginView({super.key});
 
   @override
-  State<RegisterView> createState() => _RegisterViewState();
+  State<LoginView> createState() => _LoginViewState();
 }
 
-class _RegisterViewState extends State<RegisterView> {
+class _LoginViewState extends State<LoginView> {
   late final TextEditingController _email;
   late final TextEditingController _password;
 
@@ -47,7 +34,7 @@ class _RegisterViewState extends State<RegisterView> {
       appBar: AppBar(
         backgroundColor: Colors.blueAccent,
         title: const Text(
-          "Register",
+          "Login",
           style: TextStyle(color: Colors.white),
         ),
       ),
@@ -79,28 +66,29 @@ class _RegisterViewState extends State<RegisterView> {
                           const InputDecoration(hintText: "Enter Password"),
                     ),
                     TextButton(
-                      onPressed: () async {
-                        await Firebase.initializeApp(
-                          options: DefaultFirebaseOptions.currentPlatform,
-                        );
-                        final email = _email.text;
-                        final password = _password.text;
-                        try {
-                          final userCredential = await FirebaseAuth.instance
-                              .createUserWithEmailAndPassword(
-                                  email: email, password: password);
-                          print('here is the value $userCredential');
-                        } on FirebaseAuthException catch (e) {
-                          if (e.code == "weak-password") {
-                            print("weak password");
-                          } else if (e.code == "email-already-in-use") {
-                            print("email already in use");
+                        onPressed: () async {
+                          await Firebase.initializeApp(
+                            options: DefaultFirebaseOptions.currentPlatform,
+                          );
+                          final email = _email.text;
+                          final password = _password.text;
+                          try {
+                            final userCredential = await FirebaseAuth.instance
+                                .signInWithEmailAndPassword(
+                                    email: email, password: password);
+                          } on FirebaseAuthException catch (e) {
+                            if (e.code == "user-not-found") {
+                              print("user not found");
+                            } else if (e.code == "wrong-password") {
+                              print("wrong password");
+                            }
                           }
-                        }
-                      },
-                      child: const Text("Register"),
-                      // style: TextStyle(color: Colors.white),
-                    ),
+                          // print('here is the value $userCredential');
+                        },
+                        child: const Text("Login")
+
+                        // style: TextStyle(color: Colors.white),
+                        ),
                   ],
                 ),
               );
