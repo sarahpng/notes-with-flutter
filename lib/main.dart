@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:notes_with_flutter/firebase_options.dart';
 import 'package:notes_with_flutter/views/login_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:notes_with_flutter/views/register_view.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,18 +39,52 @@ class HomePage extends StatelessWidget {
           // snapshot is the state of the future
           switch (snapshot.connectionState) {
             case ConnectionState.done:
-              final user = FirebaseAuth.instance.currentUser;
-              if (user?.emailVerified ?? false) {
-                print("you are a verified");
-              } else {
-                print("you are not verified user");
-              }
-              return const Text("Done");
+              return const LoginView();
+            // you need to ask user to login again after verifying the email
+            // final user = FirebaseAuth.instance.currentUser;
+            // print(user?.emailVerified);
+            // if (user?.emailVerified ?? false) {
+            //   // print("you are a verified");
+            //   return const Text("Done");
+            // } else {
+            //   // print("you are not verified user");
+            //   // pushing Verify Email View for the verification
+            //   // pushing a new scaffold on top a scaffold in future builder was causing the error
+            //   // Navigator.of(context).push(MaterialPageRoute(
+            //   //   builder: (context) => const VerifyEmailView(),
+            //   // ));
+            //   return const VerifyEmailView();
+            // }
             default:
               return (const Text("Loading...."));
           }
         },
       ),
+    );
+  }
+}
+
+class VerifyEmailView extends StatefulWidget {
+  const VerifyEmailView({super.key});
+
+  @override
+  State<VerifyEmailView> createState() => _VerifyEmailViewState();
+}
+
+class _VerifyEmailViewState extends State<VerifyEmailView> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Text("Please Verify your email address"),
+        TextButton(
+          onPressed: () async {
+            final user = FirebaseAuth.instance.currentUser;
+            await user?.sendEmailVerification();
+          },
+          child: const Text("Send Email Verification"),
+        ),
+      ],
     );
   }
 }
