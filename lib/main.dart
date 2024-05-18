@@ -14,6 +14,10 @@ void main() {
       colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       useMaterial3: true,
     ),
+    routes: {
+      '/login': (context) => const LoginView(),
+      '/register': (context) => const RegisterView(),
+    },
     home: const HomePage(),
   ));
 }
@@ -23,43 +27,34 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.blueAccent,
-        title: const Text(
-          "Home Page",
-          style: TextStyle(color: Colors.white),
-        ),
+    return FutureBuilder(
+      future: Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
       ),
-      body: FutureBuilder(
-        future: Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
-        ),
-        builder: (context, snapshot) {
-          // snapshot is the state of the future
-          switch (snapshot.connectionState) {
-            case ConnectionState.done:
-              return const LoginView();
-            // you need to ask user to login again after verifying the email
-            // final user = FirebaseAuth.instance.currentUser;
-            // print(user?.emailVerified);
-            // if (user?.emailVerified ?? false) {
-            //   // print("you are a verified");
-            //   return const Text("Done");
-            // } else {
-            //   // print("you are not verified user");
-            //   // pushing Verify Email View for the verification
-            //   // pushing a new scaffold on top a scaffold in future builder was causing the error
-            //   // Navigator.of(context).push(MaterialPageRoute(
-            //   //   builder: (context) => const VerifyEmailView(),
-            //   // ));
-            //   return const VerifyEmailView();
-            // }
-            default:
-              return (const Text("Loading...."));
-          }
-        },
-      ),
+      builder: (context, snapshot) {
+        // snapshot is the state of the future
+        switch (snapshot.connectionState) {
+          case ConnectionState.done:
+            return const LoginView();
+          // you need to ask user to login again after verifying the email
+          // final user = FirebaseAuth.instance.currentUser;
+          // print(user?.emailVerified);
+          // if (user?.emailVerified ?? false) {
+          //   // print("you are a verified");
+          //   return const Text("Done");
+          // } else {
+          //   // print("you are not verified user");
+          //   // pushing Verify Email View for the verification
+          //   // pushing a new scaffold on top a scaffold in future builder was causing the error
+          //   // Navigator.of(context).push(MaterialPageRoute(
+          //   //   builder: (context) => const VerifyEmailView(),
+          //   // ));
+          //   return const VerifyEmailView();
+          // }
+          default:
+            return const CircularProgressIndicator();
+        }
+      },
     );
   }
 }
@@ -74,17 +69,26 @@ class VerifyEmailView extends StatefulWidget {
 class _VerifyEmailViewState extends State<VerifyEmailView> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Text("Please Verify your email address"),
-        TextButton(
-          onPressed: () async {
-            final user = FirebaseAuth.instance.currentUser;
-            await user?.sendEmailVerification();
-          },
-          child: const Text("Send Email Verification"),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.blueAccent,
+        title: const Text(
+          "Verify Email",
+          style: TextStyle(color: Colors.white),
         ),
-      ],
+      ),
+      body: Column(
+        children: [
+          const Text("Please Verify your email address"),
+          TextButton(
+            onPressed: () async {
+              final user = FirebaseAuth.instance.currentUser;
+              await user?.sendEmailVerification();
+            },
+            child: const Text("Send Email Verification"),
+          ),
+        ],
+      ),
     );
   }
 }
