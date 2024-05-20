@@ -4,6 +4,7 @@ import 'package:notes_with_flutter/firebase_options.dart';
 import 'package:notes_with_flutter/views/login_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:notes_with_flutter/views/register_view.dart';
+import 'package:notes_with_flutter/views/verify_email_view.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +36,17 @@ class HomePage extends StatelessWidget {
         // snapshot is the state of the future
         switch (snapshot.connectionState) {
           case ConnectionState.done:
-            return const LoginView();
+            final user = FirebaseAuth.instance.currentUser;
+            if (user != null) {
+              if (user.emailVerified == true) {
+                print("email is verified");
+              } else {
+                return const VerifyEmailView();
+              }
+            } else {
+              return const LoginView();
+            }
+            return const Text("done");
           // you need to ask user to login again after verifying the email
           // final user = FirebaseAuth.instance.currentUser;
           // print(user?.emailVerified);
@@ -55,40 +66,6 @@ class HomePage extends StatelessWidget {
             return const CircularProgressIndicator();
         }
       },
-    );
-  }
-}
-
-class VerifyEmailView extends StatefulWidget {
-  const VerifyEmailView({super.key});
-
-  @override
-  State<VerifyEmailView> createState() => _VerifyEmailViewState();
-}
-
-class _VerifyEmailViewState extends State<VerifyEmailView> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.blueAccent,
-        title: const Text(
-          "Verify Email",
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
-      body: Column(
-        children: [
-          const Text("Please Verify your email address"),
-          TextButton(
-            onPressed: () async {
-              final user = FirebaseAuth.instance.currentUser;
-              await user?.sendEmailVerification();
-            },
-            child: const Text("Send Email Verification"),
-          ),
-        ],
-      ),
     );
   }
 }
