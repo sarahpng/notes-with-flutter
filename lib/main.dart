@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:notes_with_flutter/firebase_options.dart';
 import 'package:notes_with_flutter/views/login_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:notes_with_flutter/views/notes_view.dart';
 import 'package:notes_with_flutter/views/register_view.dart';
 import 'package:notes_with_flutter/views/verify_email_view.dart';
 
@@ -12,7 +13,7 @@ void main() {
     title: 'Flutter Demo',
     theme: ThemeData(
       primarySwatch: Colors.blue,
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       useMaterial3: true,
     ),
     routes: {
@@ -38,15 +39,17 @@ class HomePage extends StatelessWidget {
           case ConnectionState.done:
             final user = FirebaseAuth.instance.currentUser;
             if (user != null) {
-              if (user.emailVerified == true) {
-                print("email is verified");
+              if (user.emailVerified) {
+                return const NotesView();
               } else {
                 return const VerifyEmailView();
               }
             } else {
               return const LoginView();
             }
-            return const Text("done");
+
+          default:
+            return const CircularProgressIndicator();
           // you need to ask user to login again after verifying the email
           // final user = FirebaseAuth.instance.currentUser;
           // print(user?.emailVerified);
@@ -62,8 +65,6 @@ class HomePage extends StatelessWidget {
           //   // ));
           //   return const VerifyEmailView();
           // }
-          default:
-            return const CircularProgressIndicator();
         }
       },
     );
