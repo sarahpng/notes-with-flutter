@@ -3,7 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
-import '../api_key.dart';
+// import '../api_key.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -54,7 +54,7 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: apiKey,
+    apiKey: 'AIzaSyBKCpbEplkje1EWsptxe0zbujQuX9kwPlU',
     appId: '1:564197594963:android:556307177ca90db7b4f3a6',
     messagingSenderId: '564197594963',
     projectId: 'notes-with-flutter1234',
