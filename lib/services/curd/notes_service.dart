@@ -6,8 +6,68 @@ class DatabaseAlreadyOpenException implements Exception {}
 
 class UnableToGetDocumentDirectory implements Exception {}
 
+class DatabaseIsNotOpen implements Exception {}
+
+class CouldNotDeleteUser implements Exception {}
+
+class UserAlreadyExists implements Exception {}
+
+class CouldNotFindUser implements Exception {}
+
 class NotesService {
   Database? _db;
+
+  Future<DatabaseUser> createUser({required String email}) async {
+    final db = _getDatabaseOrThrow();
+    final results = await db.query(
+      userTable,
+      limit: 1,
+      where: "email = ?",
+      whereArgs: [email.toLowerCase()],
+    );
+    if (results.isNotEmpty) {
+      throw UserAlreadyExists();
+    }
+    final userId = await db.insert(userTable, {
+      emailColumn: email.toLowerCase(),
+    });
+
+    return DatabaseUser(
+      id: userId,
+      email: email,
+    );
+  }
+
+  Future<DatabaseUser> getUser({required String email}) async {
+    final db = _getDatabaseOrThrow();
+    final results = await db.query(userTable,
+        limit: 1, where: "email = ?", whereArgs: [email.toLowerCase()]);
+    if (results.isEmpty) {
+      throw CouldNotFindUser();
+    } else {
+      return DatabaseUser.fromRow(results.first);
+    }
+  }
+
+  Future<void> deleteUser({required String email}) async {
+    final db = _getDatabaseOrThrow();
+    final deleteCount = await db
+        .delete(userTable, where: "email = ?", whereArgs: [
+      email.toLowerCase()
+    ]); // The ? character is recognized by SQLite as a placeholder for a value to be inserted.
+    if (deleteCount != 1) {
+      throw CouldNotDeleteUser();
+    }
+  }
+
+  Database _getDatabaseOrThrow() {
+    final db = _db;
+    if (db == null) {
+      throw DatabaseIsNotOpen();
+    } else {
+      return db;
+    }
+  }
 
   Future<void> open() async {
     if (_db != null) {
@@ -26,6 +86,16 @@ class NotesService {
       await db.execute(createNoteTable);
     } on MissingPlatformDirectoryException {
       throw UnableToGetDocumentDirectory();
+    }
+  }
+
+  Future<void> close() async {
+    final db = _db;
+    if (db == null) {
+      throw DatabaseIsNotOpen();
+    } else {
+      await db.close();
+      _db = null;
     }
   }
 }
