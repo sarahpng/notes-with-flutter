@@ -14,8 +14,49 @@ class UserAlreadyExists implements Exception {}
 
 class CouldNotFindUser implements Exception {}
 
+class CouldNotDeleteNote implements Exception {}
+
 class NotesService {
   Database? _db;
+
+  Future<DatabaseNote> createNote({required DatabaseUser owner}) async {
+    final db = _getDatabaseOrThrow();
+    // make sure owner exists in database with correct id
+    final dbuser = await getUser(email: owner.email);
+    if (dbuser != owner) {
+      throw CouldNotFindUser();
+    }
+    const text = '';
+    // create note
+    final noteId = await db.insert(noteTable, {
+      textColumn: text,
+      idColumn: owner.id,
+      isSyncedWithCloudColumn: 1,
+    });
+
+    final note = DatabaseNote(
+      id: noteId,
+      userId: owner.id,
+      text: text,
+      isSyncedWithCloud: false,
+    );
+    return note;
+  }
+
+  Future<void> deleteNote({required int id}) async {
+    final db = _getDatabaseOrThrow();
+    final deleteCount =
+        await db.delete(noteTable, where: 'id = ?', whereArgs: [id]);
+
+    if (deleteCount == 0) {
+      throw CouldNotDeleteNote();
+    }
+  }
+
+  Future<int> deleteAllNotes() async {
+    final db = _getDatabaseOrThrow();
+    return await db.delete(noteTable);
+  }
 
   Future<DatabaseUser> createUser({required String email}) async {
     final db = _getDatabaseOrThrow();
@@ -74,6 +115,7 @@ class NotesService {
       throw DatabaseAlreadyOpenException();
     }
     try {
+// we need to construct our db path using path and path_provider
       final docsPath = await getApplicationDocumentsDirectory();
       final dbpath = join(docsPath.path, dbName);
       final db = await openDatabase(dbpath);
@@ -100,7 +142,6 @@ class NotesService {
   }
 }
 
-// we need to construct our db path using path and path_provider
 class DatabaseUser {
   final int id;
   final String email;
